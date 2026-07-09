@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log Artikel — Terminal Monitoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void: #090C14;
+    --panel: #10141F;
+    --panel-raised: #141928;
+    --grid: #1C2333;
+    --hairline: #2A3247;
+    --text: #E7EBF5;
+    --text-dim: #6B7690;
+    --text-faint: #414B63;
+    --cyan: #4FE3E8;
+    --violet: #8B7CF0;
+    --amber: #F2B84B;
+    --glow-cyan: rgba(79,227,232,0.35);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    padding:48px 16px;
+    display:flex;
+    justify-content:center;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(139,124,240,0.14), transparent 60%),
+      radial-gradient(ellipse 700px 400px at 90% 100%, rgba(79,227,232,0.08), transparent 60%),
+      var(--void);
+    font-family:'Inter', sans-serif;
+    color:var(--text);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(139,124,240,0.14), transparent 60%),
+      radial-gradient(ellipse 700px 400px at 90% 100%, rgba(79,227,232,0.08), transparent 60%),
+      var(--void);
+    background-size: 42px 42px, 42px 42px, auto, auto, auto;
+  }
+  .wrap{ width:100%; max-width:600px; }
+
+  .masthead{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:20px;
+  }
+  .id-block .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:6px;
+  }
+  .id-block h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:26px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .status-pill{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    color:var(--text-dim);
+    border:1px solid var(--hairline);
+    border-radius:20px;
+    padding:6px 12px;
+    background:var(--panel);
+  }
+  .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--cyan);
+    box-shadow:0 0 8px 1px var(--glow-cyan);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:0.35; }
+  }
+
+  .panel{
+    position:relative;
+    background: linear-gradient(180deg, var(--panel-raised), var(--panel));
+    border:1px solid var(--hairline);
+    border-radius:10px;
+    padding:30px 28px 24px;
+  }
+  .corner{
+    position:absolute;
+    width:16px; height:16px;
+    border:1.5px solid var(--cyan);
+    opacity:0.7;
+  }
+  .corner.tl{ top:-1px; left:-1px; border-right:none; border-bottom:none; border-radius:10px 0 0 0; }
+  .corner.tr{ top:-1px; right:-1px; border-left:none; border-bottom:none; border-radius:0 10px 0 0; }
+  .corner.bl{ bottom:-1px; left:-1px; border-right:none; border-top:none; border-radius:0 0 0 10px; }
+  .corner.br{ bottom:-1px; right:-1px; border-left:none; border-top:none; border-radius:0 0 10px 0; }
+
+  form{ display:grid; gap:16px; }
+  .field{ display:grid; gap:7px; }
+  .field label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .field label::before{
+    content:"›";
+    color:var(--cyan);
+    font-weight:600;
+  }
+  .field input{
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    color:var(--text);
+    background:#0C1019;
+    border:1px solid var(--hairline);
+    border-radius:6px;
+    padding:11px 12px;
+    outline:none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .field input:focus{
+    border-color:var(--cyan);
+    box-shadow:0 0 0 3px rgba(79,227,232,0.12);
+  }
+  .field input::placeholder{ color:var(--text-faint); }
+
+  .chip-row{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:2px;
+  }
+  .chip{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.04em;
+    color:var(--text-dim);
+    background:#0C1019;
+    border:1px solid var(--hairline);
+    border-radius:20px;
+    padding:5px 11px;
+    cursor:pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .chip:hover{
+    border-color:var(--violet);
+    color:var(--text);
+  }
+  .chip.active{
+    border-color:var(--cyan);
+    color:var(--cyan);
+    box-shadow:0 0 10px rgba(79,227,232,0.18);
+  }
+
+  .row-actions{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-top:22px;
+  }
+  button{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--void);
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    border:none;
+    border-radius:6px;
+    padding:12px 22px;
+    cursor:pointer;
+    box-shadow:0 0 0 rgba(79,227,232,0);
+    transition: box-shadow 0.2s ease, transform 0.1s ease;
+  }
+  button:hover{ box-shadow:0 0 22px rgba(79,227,232,0.35); }
+  button:active{ transform: translateY(1px); }
+  button:disabled{
+    background:var(--hairline);
+    color:var(--text-faint);
+    cursor:not-allowed;
+    box-shadow:none;
+  }
+
+  .status{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:var(--text-dim);
+  }
+  .status.ok{ color:var(--cyan); }
+  .status.err{ color:#F26D6D; }
+
+  .config-note{
+    margin-top:22px;
+    font-size:12px;
+    line-height:1.6;
+    color:var(--text-dim);
+    border-top:1px dashed var(--hairline);
+    padding-top:16px;
+  }
+  .config-note code{
+    background:#0C1019;
+    border:1px solid var(--hairline);
+    padding:1px 6px;
+    border-radius:4px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--cyan);
+  }
+
+  .ledger{ margin-top:30px; }
+  .ledger h2{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    margin:0 0 12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .ledger h2::after{ content:""; flex:1; height:1px; background:var(--hairline); }
+  .log-console{
+    background:#0A0D16;
+    border:1px solid var(--hairline);
+    border-radius:8px;
+    padding:6px 4px;
+    max-height:340px;
+    overflow-y:auto;
+  }
+  .entry{
+    display:grid;
+    grid-template-columns:60px 1fr auto;
+    gap:12px;
+    align-items:baseline;
+    padding:10px 12px;
+    border-bottom:1px solid var(--grid);
+    font-size:13.5px;
+  }
+  .entry:last-child{ border-bottom:none; }
+  .entry .idx{
+    font-family:'JetBrains Mono', monospace;
+    color:var(--violet);
+    font-size:12px;
+  }
+  .entry .main .title{ color:var(--text); }
+  .entry .main .meta{
+    color:var(--text-dim);
+    font-size:11.5px;
+    margin-top:2px;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .entry .date{
+    font-family:'JetBrains Mono', monospace;
+    color:var(--text-faint);
+    font-size:11px;
+    white-space:nowrap;
+    text-align:right;
+  }
+  .badge{
+    display:inline-block;
+    margin-top:4px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.06em;
+    padding:2px 7px;
+    border-radius:10px;
+    border:1px solid;
+  }
+  .badge.late{ color:#F26D6D; border-color:#F26D6D; background:rgba(242,109,109,0.08); }
+  .badge.soon{ color:var(--amber); border-color:var(--amber); background:rgba(242,184,75,0.08); }
+  .badge.ok{ color:var(--cyan); border-color:var(--cyan); background:rgba(79,227,232,0.08); }
+  .empty{
+    color:var(--text-faint);
+    font-size:12.5px;
+    font-family:'JetBrains Mono', monospace;
+    padding:14px 12px;
+  }
+  .empty::before{ content:"$ "; color:var(--cyan); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="id-block">
+      <div class="eyebrow">Monitoring Terminal</div>
+      <h1>Log Artikel</h1>
+    </div>
+    <div class="status-pill"><span class="dot"></span>ONLINE</div>
+  </div>
+
+  <div class="panel">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+
+    <form id="logForm">
+      <div class="field">
+        <label for="id">ID</label>
+        <input type="text" id="id" name="id" placeholder="mis. 001" required>
+      </div>
+      <div class="field">
+        <label for="penulis">Penulis Pertama</label>
+        <input type="text" id="penulis" name="penulis" placeholder="mis. Suharto, A." required>
+      </div>
+      <div class="field">
+        <label for="judul">Judul Artikel</label>
+        <input type="text" id="judul" name="judul" placeholder="Judul lengkap artikel" required>
+      </div>
+      <div class="field">
+        <label for="tanggal">Tanggal Input</label>
+        <input type="date" id="tanggal" name="tanggal" required>
+      </div>
+      <div class="field">
+        <label for="jurnal">Jurnal</label>
+        <input type="text" id="jurnal" name="jurnal" placeholder="Nama jurnal" required>
+      </div>
+      <div class="field">
+        <label for="deadline">Deadline</label>
+        <input type="date" id="deadline" name="deadline" required>
+        <div class="chip-row" id="chipRow">
+          <button type="button" class="chip" data-days="1">1 hari</button>
+          <button type="button" class="chip" data-days="3">3 hari</button>
+          <button type="button" class="chip" data-days="7">7 hari</button>
+          <button type="button" class="chip" data-days="14">14 hari</button>
+          <button type="button" class="chip" data-days="30">30 hari</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="tujuanSheet">Tujuan Sheet (Tab)</label>
+        <input type="text" id="tujuanSheet" name="tujuanSheet" placeholder="mis. Log Artikel" required>
+      </div>
+    </form>
+
+    <div class="row-actions">
+      <button id="submitBtn" type="submit" form="logForm">Kirim Data</button>
+      <span class="status" id="statusMsg"></span>
+    </div>
+
+    <div class="config-note">
+      Sebelum dipakai, isi <code>SCRIPT_URL</code> di kode halaman ini dengan URL Web App Google Apps Script Anda. Tanpa itu, entri hanya tersimpan sementara di log sesi di bawah, belum masuk ke Spreadsheet.<br><br>
+      Kolom <b>Tujuan Sheet</b> harus sama persis dengan nama tab di spreadsheet (case-sensitive). Kalau tab belum ada, script otomatis membuatkannya.<br><br>
+      Klik salah satu preset (1/3/7/14/30 hari) untuk mengisi <b>Deadline</b> otomatis dari hari ini, atau atur manual lewat kalender. Default terisi 7 hari.
+    </div>
+  </div>
+
+  <div class="ledger">
+    <h2>Log Sesi Ini</h2>
+    <div class="log-console" id="entryList"><div class="empty">Belum ada entri yang dikirim.</div></div>
+  </div>
+
+</div>
+
+<script>
+  // ==== GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA ====
+  const SCRIPT_URL = "PASTE_URL_WEB_APP_ANDA_DI_SINI";
+  // ===========================================================
+
+  const form = document.getElementById('logForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const statusMsg = document.getElementById('statusMsg');
+  const entryList = document.getElementById('entryList');
+  const dateInput = document.getElementById('tanggal');
+  const idInput = document.getElementById('id');
+  const sheetInput = document.getElementById('tujuanSheet');
+  const deadlineInput = document.getElementById('deadline');
+  const chipRow = document.getElementById('chipRow');
+
+  let sessionEntries = [];
+  let counter = 1;
+  let lastSheetName = '';
+
+  function isoPlusDays(days){
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0,10);
+  }
+  function setDeadline(days){
+    deadlineInput.value = isoPlusDays(days);
+    [...chipRow.querySelectorAll('.chip')].forEach(c => {
+      c.classList.toggle('active', Number(c.dataset.days) === days);
+    });
+  }
+  chipRow.addEventListener('click', function(evt){
+    const btn = evt.target.closest('.chip');
+    if(!btn) return;
+    setDeadline(Number(btn.dataset.days));
+  });
+  deadlineInput.addEventListener('input', function(){
+    [...chipRow.querySelectorAll('.chip')].forEach(c => c.classList.remove('active'));
+  });
+  setDeadline(7); // default: 7 hari dari sekarang
+
+  function todayISO(){
+    const d = new Date();
+    return d.toISOString().slice(0,10);
+  }
+  function suggestId(){
+    return String(counter).padStart(3,'0');
+  }
+  dateInput.value = todayISO();
+  idInput.value = suggestId();
+
+  function deadlineBadge(deadlineStr){
+    const today = new Date(todayISO() + 'T00:00:00');
+    const dl = new Date(deadlineStr + 'T00:00:00');
+    const diffDays = Math.round((dl - today) / 86400000);
+    if(diffDays < 0) return { cls:'late', label:`Terlambat ${Math.abs(diffDays)}h` };
+    if(diffDays === 0) return { cls:'soon', label:'Jatuh tempo hari ini' };
+    if(diffDays <= 3) return { cls:'soon', label:`Sisa ${diffDays}h` };
+    return { cls:'ok', label:`Sisa ${diffDays}h` };
+  }
+
+  function renderEntries(){
+    if(sessionEntries.length === 0){
+      entryList.innerHTML = '<div class="empty">Belum ada entri yang dikirim.</div>';
+      return;
+    }
+    entryList.innerHTML = sessionEntries.slice().reverse().map(e => {
+      const b = deadlineBadge(e.deadline);
+      return `
+      <div class="entry">
+        <div class="idx">${e.id}</div>
+        <div class="main">
+          <div class="title">${escapeHtml(e.judul)}</div>
+          <div class="meta">${escapeHtml(e.penulis)} · ${escapeHtml(e.jurnal)} · tab: ${escapeHtml(e.sheetName)}</div>
+        </div>
+        <div class="date">
+          ${e.tanggal}
+          <div class="badge ${b.cls}">${b.label}</div>
+        </div>
+      </div>
+    `;
+    }).join('');
+  }
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  form.addEventListener('submit', async function(evt){
+    evt.preventDefault();
+    const data = {
+      id: idInput.value.trim(),
+      penulis: document.getElementById('penulis').value.trim(),
+      judul: document.getElementById('judul').value.trim(),
+      tanggal: dateInput.value,
+      jurnal: document.getElementById('jurnal').value.trim(),
+      deadline: deadlineInput.value,
+      sheetName: sheetInput.value.trim(),
+    };
+    if(!data.id || !data.penulis || !data.judul || !data.tanggal || !data.jurnal || !data.deadline || !data.sheetName){
+      statusMsg.textContent = 'Semua kolom wajib diisi.';
+      statusMsg.className = 'status err';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    statusMsg.textContent = 'Mengirim…';
+    statusMsg.className = 'status';
+
+    const isConfigured = SCRIPT_URL && SCRIPT_URL.startsWith('http');
+
+    try{
+      if(isConfigured){
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {'Content-Type':'text/plain;charset=utf-8'},
+          body: JSON.stringify(data)
+        });
+        let ok = res.ok;
+        if(!ok){
+          throw new Error('Respon server: ' + res.status);
+        }
+      }
+
+      sessionEntries.push(data);
+      counter++;
+      lastSheetName = data.sheetName;
+      renderEntries();
+      form.reset();
+      dateInput.value = todayISO();
+      idInput.value = suggestId();
+      sheetInput.value = lastSheetName;
+      setDeadline(7);
+
+      statusMsg.textContent = isConfigured
+        ? `Tersimpan ke tab "${data.sheetName}".`
+        : 'Tersimpan di sesi ini (SCRIPT_URL belum diisi, belum masuk Spreadsheet).';
+      statusMsg.className = 'status ok';
+
+    }catch(err){
+      statusMsg.textContent = 'Gagal mengirim: ' + err.message;
+      statusMsg.className = 'status err';
+    }finally{
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
