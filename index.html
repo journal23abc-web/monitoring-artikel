@@ -19,6 +19,7 @@
     --cyan: #4FE3E8;
     --violet: #8B7CF0;
     --amber: #F2B84B;
+    --green: #6EE7A8;
     --glow-cyan: rgba(79,227,232,0.35);
   }
   *{box-sizing:border-box;}
@@ -96,6 +97,7 @@
     border-radius:10px;
     padding:30px 28px 24px;
   }
+  .panel + .panel{ margin-top:24px; }
   .corner{
     position:absolute;
     width:16px; height:16px;
@@ -124,7 +126,14 @@
     color:var(--cyan);
     font-weight:600;
   }
-  .field input{
+  .field label .optional{
+    text-transform:none;
+    letter-spacing:0;
+    color:var(--text-faint);
+    font-size:10px;
+    margin-left:2px;
+  }
+  .field input, .field select{
     font-family:'Inter', sans-serif;
     font-size:15px;
     color:var(--text);
@@ -135,11 +144,27 @@
     outline:none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  .field input:focus{
+  .field input:focus, .field select:focus{
     border-color:var(--cyan);
     box-shadow:0 0 0 3px rgba(79,227,232,0.12);
   }
   .field input::placeholder{ color:var(--text-faint); }
+
+  .section-divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:4px 0 -2px;
+  }
+  .section-divider span{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    white-space:nowrap;
+  }
+  .section-divider::after{ content:""; flex:1; height:1px; background:var(--hairline); }
 
   .chip-row{
     display:flex;
@@ -168,12 +193,23 @@
     color:var(--cyan);
     box-shadow:0 0 10px rgba(79,227,232,0.18);
   }
+  .chip.status-active[data-status="Selesai"]{
+    border-color:var(--green);
+    color:var(--green);
+    box-shadow:0 0 10px rgba(110,231,168,0.18);
+  }
+  .chip.status-active[data-status="Belum"]{
+    border-color:var(--amber);
+    color:var(--amber);
+    box-shadow:0 0 10px rgba(242,184,75,0.18);
+  }
 
   .row-actions{
     display:flex;
     align-items:center;
     gap:16px;
     margin-top:22px;
+    flex-wrap:wrap;
   }
   button{
     font-family:'JetBrains Mono', monospace;
@@ -197,6 +233,16 @@
     color:var(--text-faint);
     cursor:not-allowed;
     box-shadow:none;
+  }
+  button.secondary{
+    background:transparent;
+    border:1px solid var(--hairline);
+    color:var(--text-dim);
+  }
+  button.secondary:hover{
+    border-color:var(--violet);
+    color:var(--text);
+    box-shadow:0 0 14px rgba(139,124,240,0.18);
   }
 
   .status{
@@ -268,6 +314,12 @@
     margin-top:2px;
     font-family:'JetBrains Mono', monospace;
   }
+  .entry .main .meta-extra{
+    color:var(--text-faint);
+    font-size:11px;
+    margin-top:3px;
+    font-family:'JetBrains Mono', monospace;
+  }
   .entry .date{
     font-family:'JetBrains Mono', monospace;
     color:var(--text-faint);
@@ -288,6 +340,7 @@
   .badge.late{ color:#F26D6D; border-color:#F26D6D; background:rgba(242,109,109,0.08); }
   .badge.soon{ color:var(--amber); border-color:var(--amber); background:rgba(242,184,75,0.08); }
   .badge.ok{ color:var(--cyan); border-color:var(--cyan); background:rgba(79,227,232,0.08); }
+  .badge.done{ color:var(--green); border-color:var(--green); background:rgba(110,231,168,0.08); }
   .empty{
     color:var(--text-faint);
     font-size:12.5px;
@@ -295,6 +348,53 @@
     padding:14px 12px;
   }
   .empty::before{ content:"$ "; color:var(--cyan); }
+
+  .viewer-row{
+    display:flex;
+    gap:10px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+  }
+  .viewer-row .field{ flex:1; min-width:180px; }
+  .table-wrap{
+    margin-top:16px;
+    overflow-x:auto;
+    background:#0A0D16;
+    border:1px solid var(--hairline);
+    border-radius:8px;
+  }
+  table.sheet-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12.5px;
+    font-family:'JetBrains Mono', monospace;
+    white-space:nowrap;
+  }
+  table.sheet-table th{
+    text-align:left;
+    color:var(--cyan);
+    font-size:10.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:10px 12px;
+    border-bottom:1px solid var(--hairline);
+    background:#0C1019;
+    position:sticky;
+    top:0;
+  }
+  table.sheet-table td{
+    padding:9px 12px;
+    border-bottom:1px solid var(--grid);
+    color:var(--text-dim);
+  }
+  table.sheet-table tr:last-child td{ border-bottom:none; }
+  table.sheet-table tr:hover td{ color:var(--text); background:rgba(79,227,232,0.03); }
+  .row-count{
+    margin-top:10px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--text-faint);
+  }
 </style>
 </head>
 <body>
@@ -347,6 +447,37 @@
         <label for="tujuanSheet">Tujuan Sheet (Tab)</label>
         <input type="text" id="tujuanSheet" name="tujuanSheet" placeholder="mis. Log Artikel" required>
       </div>
+
+      <div class="section-divider"><span>Info Tambahan · Opsional</span></div>
+
+      <div class="field">
+        <label for="afiliasi">Afiliasi<span class="optional">(opsional)</span></label>
+        <input type="text" id="afiliasi" name="afiliasi" placeholder="mis. Universitas / Instansi">
+      </div>
+      <div class="field">
+        <label for="email">Email<span class="optional">(opsional)</span></label>
+        <input type="email" id="email" name="email" placeholder="mis. nama@email.com">
+      </div>
+      <div class="field">
+        <label for="kontakWa">Kontak WA<span class="optional">(opsional)</span></label>
+        <input type="text" id="kontakWa" name="kontakWa" placeholder="mis. 08123456789">
+      </div>
+      <div class="field">
+        <label>Status<span class="optional">(opsional)</span></label>
+        <div class="chip-row" id="statusRow">
+          <button type="button" class="chip" data-status="Selesai">Selesai</button>
+          <button type="button" class="chip" data-status="Belum">Belum</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Jenis Tugas<span class="optional">(opsional, bisa pilih lebih dari satu)</span></label>
+        <div class="chip-row" id="tugasRow">
+          <button type="button" class="chip" data-tugas="Copyediting">Copyediting</button>
+          <button type="button" class="chip" data-tugas="Publish">Publish</button>
+          <button type="button" class="chip" data-tugas="Pantau Sampai Publish">Pantau Sampai Publish</button>
+          <button type="button" class="chip" data-tugas="Marketing">Marketing</button>
+        </div>
+      </div>
     </form>
 
     <div class="row-actions">
@@ -357,8 +488,24 @@
     <div class="config-note">
       Sebelum dipakai, isi <code>SCRIPT_URL</code> di kode halaman ini dengan URL Web App Google Apps Script Anda. Tanpa itu, entri hanya tersimpan sementara di log sesi di bawah, belum masuk ke Spreadsheet.<br><br>
       Kolom <b>Tujuan Sheet</b> harus sama persis dengan nama tab di spreadsheet (case-sensitive). Kalau tab belum ada, script otomatis membuatkannya.<br><br>
-      Klik salah satu preset (1/3/7/14/30 hari) untuk mengisi <b>Deadline</b> otomatis dari hari ini, atau atur manual lewat kalender. Default terisi 7 hari.
+      Klik salah satu preset (1/3/7/14/30 hari) untuk mengisi <b>Deadline</b> otomatis dari hari ini, atau atur manual lewat kalender. Default terisi 7 hari.<br><br>
+      Semua kolom di bagian <b>Info Tambahan</b> bersifat opsional dan boleh dikosongkan.
     </div>
+  </div>
+
+  <div class="panel">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    <div class="section-divider" style="margin-bottom:14px;"><span>Lihat Isi Sheet</span></div>
+    <div class="viewer-row">
+      <div class="field">
+        <label for="viewSheetName">Nama Tab</label>
+        <input type="text" id="viewSheetName" list="sheetNameList" placeholder="mis. Irul">
+        <datalist id="sheetNameList"></datalist>
+      </div>
+      <button id="viewBtn" type="button" class="secondary">Tampilkan</button>
+    </div>
+    <span class="status" id="viewStatusMsg"></span>
+    <div id="viewResult"></div>
   </div>
 
   <div class="ledger">
@@ -382,10 +529,14 @@
   const sheetInput = document.getElementById('tujuanSheet');
   const deadlineInput = document.getElementById('deadline');
   const chipRow = document.getElementById('chipRow');
+  const statusRow = document.getElementById('statusRow');
+  const tugasRow = document.getElementById('tugasRow');
 
   let sessionEntries = [];
   let counter = 1;
   let lastSheetName = '';
+  let selectedStatus = '';
+  let selectedTugas = [];
 
   function isoPlusDays(days){
     const d = new Date();
@@ -407,6 +558,47 @@
     [...chipRow.querySelectorAll('.chip')].forEach(c => c.classList.remove('active'));
   });
   setDeadline(7); // default: 7 hari dari sekarang
+
+  // Status: single-select toggle, boleh dikosongkan (klik lagi untuk batal pilih)
+  statusRow.addEventListener('click', function(evt){
+    const btn = evt.target.closest('.chip');
+    if(!btn) return;
+    const val = btn.dataset.status;
+    if(selectedStatus === val){
+      selectedStatus = '';
+    } else {
+      selectedStatus = val;
+    }
+    [...statusRow.querySelectorAll('.chip')].forEach(c => {
+      const active = c.dataset.status === selectedStatus;
+      c.classList.toggle('status-active', active);
+      c.classList.toggle('active', active);
+    });
+  });
+
+  // Jenis Tugas: multi-select toggle
+  tugasRow.addEventListener('click', function(evt){
+    const btn = evt.target.closest('.chip');
+    if(!btn) return;
+    const val = btn.dataset.tugas;
+    if(selectedTugas.includes(val)){
+      selectedTugas = selectedTugas.filter(t => t !== val);
+      btn.classList.remove('active');
+    } else {
+      selectedTugas.push(val);
+      btn.classList.add('active');
+    }
+  });
+
+  function resetOptionalChips(){
+    selectedStatus = '';
+    selectedTugas = [];
+    [...statusRow.querySelectorAll('.chip')].forEach(c => {
+      c.classList.remove('active');
+      c.classList.remove('status-active');
+    });
+    [...tugasRow.querySelectorAll('.chip')].forEach(c => c.classList.remove('active'));
+  }
 
   function todayISO(){
     const d = new Date();
@@ -434,13 +626,22 @@
       return;
     }
     entryList.innerHTML = sessionEntries.slice().reverse().map(e => {
-      const b = deadlineBadge(e.deadline);
+      const b = e.status === 'Selesai'
+        ? { cls:'done', label:'Selesai' }
+        : deadlineBadge(e.deadline);
+      const extras = [];
+      if(e.afiliasi) extras.push(e.afiliasi);
+      if(e.email) extras.push(e.email);
+      if(e.kontakWa) extras.push('WA: ' + e.kontakWa);
+      if(e.jenisTugas) extras.push(e.jenisTugas);
+      const extraLine = extras.length ? `<div class="meta-extra">${escapeHtml(extras.join(' · '))}</div>` : '';
       return `
       <div class="entry">
         <div class="idx">${e.id}</div>
         <div class="main">
           <div class="title">${escapeHtml(e.judul)}</div>
           <div class="meta">${escapeHtml(e.penulis)} · ${escapeHtml(e.jurnal)} · tab: ${escapeHtml(e.sheetName)}</div>
+          ${extraLine}
         </div>
         <div class="date">
           ${e.tanggal}
@@ -452,7 +653,7 @@
   }
   function escapeHtml(s){
     const d = document.createElement('div');
-    d.textContent = s;
+    d.textContent = s == null ? '' : String(s);
     return d.innerHTML;
   }
 
@@ -466,9 +667,14 @@
       jurnal: document.getElementById('jurnal').value.trim(),
       deadline: deadlineInput.value,
       sheetName: sheetInput.value.trim(),
+      afiliasi: document.getElementById('afiliasi').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      kontakWa: document.getElementById('kontakWa').value.trim(),
+      status: selectedStatus,
+      jenisTugas: selectedTugas.join(', '),
     };
     if(!data.id || !data.penulis || !data.judul || !data.tanggal || !data.jurnal || !data.deadline || !data.sheetName){
-      statusMsg.textContent = 'Semua kolom wajib diisi.';
+      statusMsg.textContent = 'Kolom wajib (ID, Penulis, Judul, Tanggal, Jurnal, Deadline, Tujuan Sheet) harus diisi.';
       statusMsg.className = 'status err';
       return;
     }
@@ -501,6 +707,7 @@
       idInput.value = suggestId();
       sheetInput.value = lastSheetName;
       setDeadline(7);
+      resetOptionalChips();
 
       statusMsg.textContent = isConfigured
         ? `Tersimpan ke tab "${data.sheetName}".`
@@ -512,6 +719,90 @@
       statusMsg.className = 'status err';
     }finally{
       submitBtn.disabled = false;
+    }
+  });
+
+  // ==== Fitur: Lihat Isi Sheet Tertentu ====
+  const viewBtn = document.getElementById('viewBtn');
+  const viewSheetName = document.getElementById('viewSheetName');
+  const viewStatusMsg = document.getElementById('viewStatusMsg');
+  const viewResult = document.getElementById('viewResult');
+  const sheetNameList = document.getElementById('sheetNameList');
+
+  async function loadSheetNameList(){
+    if(!(SCRIPT_URL && SCRIPT_URL.startsWith('http'))) return;
+    try{
+      const res = await fetch(SCRIPT_URL + '?action=listSheets');
+      const json = await res.json();
+      if(json.status === 'ok' && Array.isArray(json.sheets)){
+        sheetNameList.innerHTML = json.sheets.map(s => `<option value="${escapeHtml(s)}"></option>`).join('');
+      }
+    }catch(err){
+      // Diam-diam gagal; datalist opsional saja, tidak menghentikan pengguna.
+    }
+  }
+  loadSheetNameList();
+
+  async function viewSheet(){
+    const name = viewSheetName.value.trim();
+    if(!name){
+      viewStatusMsg.textContent = 'Isi dulu nama tab yang mau dilihat.';
+      viewStatusMsg.className = 'status err';
+      return;
+    }
+    if(!(SCRIPT_URL && SCRIPT_URL.startsWith('http'))){
+      viewStatusMsg.textContent = 'SCRIPT_URL belum diisi, tidak bisa mengambil data dari Spreadsheet.';
+      viewStatusMsg.className = 'status err';
+      return;
+    }
+
+    viewBtn.disabled = true;
+    viewStatusMsg.textContent = 'Mengambil data…';
+    viewStatusMsg.className = 'status';
+    viewResult.innerHTML = '';
+
+    try{
+      const res = await fetch(SCRIPT_URL + '?action=view&sheet=' + encodeURIComponent(name));
+      const json = await res.json();
+      if(json.status !== 'ok'){
+        throw new Error(json.message || 'Gagal mengambil data.');
+      }
+      if(!json.headers || json.headers.length === 0 || !json.rows || json.rows.length === 0){
+        viewResult.innerHTML = `<div class="table-wrap"><div class="empty">Tab "${escapeHtml(name)}" kosong atau belum punya data.</div></div>`;
+        viewStatusMsg.textContent = 'Tidak ada data untuk ditampilkan.';
+        viewStatusMsg.className = 'status';
+        return;
+      }
+      const headers = json.headers;
+      const rows = json.rows;
+      const theadHtml = '<tr>' + headers.map(h => `<th>${escapeHtml(h)}</th>`).join('') + '</tr>';
+      const tbodyHtml = rows.map(row => {
+        return '<tr>' + headers.map(h => `<td>${escapeHtml(row[h])}</td>`).join('') + '</tr>';
+      }).join('');
+      viewResult.innerHTML = `
+        <div class="table-wrap">
+          <table class="sheet-table">
+            <thead>${theadHtml}</thead>
+            <tbody>${tbodyHtml}</tbody>
+          </table>
+        </div>
+        <div class="row-count">${rows.length} baris ditemukan di tab "${escapeHtml(name)}".</div>
+      `;
+      viewStatusMsg.textContent = 'Berhasil dimuat.';
+      viewStatusMsg.className = 'status ok';
+    }catch(err){
+      viewStatusMsg.textContent = 'Gagal mengambil data: ' + err.message;
+      viewStatusMsg.className = 'status err';
+    }finally{
+      viewBtn.disabled = false;
+    }
+  }
+
+  viewBtn.addEventListener('click', viewSheet);
+  viewSheetName.addEventListener('keydown', function(evt){
+    if(evt.key === 'Enter'){
+      evt.preventDefault();
+      viewSheet();
     }
   });
 </script>
