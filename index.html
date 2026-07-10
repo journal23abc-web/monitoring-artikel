@@ -20,6 +20,7 @@
     --violet: #8B7CF0;
     --amber: #F2B84B;
     --green: #6EE7A8;
+    --red: #F26D6D;
     --glow-cyan: rgba(79,227,232,0.35);
   }
   *{box-sizing:border-box;}
@@ -43,7 +44,7 @@
       var(--void);
     background-size: 42px 42px, 42px 42px, auto, auto, auto;
   }
-  .wrap{ width:100%; max-width:600px; }
+  .wrap{ width:100%; max-width:640px; }
 
   .masthead{
     display:flex;
@@ -133,7 +134,7 @@
     font-size:10px;
     margin-left:2px;
   }
-  .field input, .field select{
+  .field input, .field select, .field textarea{
     font-family:'Inter', sans-serif;
     font-size:15px;
     color:var(--text);
@@ -143,12 +144,13 @@
     padding:11px 12px;
     outline:none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    width:100%;
   }
-  .field input:focus, .field select:focus{
+  .field input:focus, .field select:focus, .field textarea:focus{
     border-color:var(--cyan);
     box-shadow:0 0 0 3px rgba(79,227,232,0.12);
   }
-  .field input::placeholder{ color:var(--text-faint); }
+  .field input::placeholder, .field textarea::placeholder{ color:var(--text-faint); }
 
   .section-divider{
     display:flex;
@@ -165,6 +167,13 @@
     white-space:nowrap;
   }
   .section-divider::after{ content:""; flex:1; height:1px; background:var(--hairline); }
+
+  .hint{
+    font-size:11.5px;
+    color:var(--text-faint);
+    line-height:1.5;
+    margin-top:-6px;
+  }
 
   .chip-row{
     display:flex;
@@ -204,6 +213,56 @@
     box-shadow:0 0 10px rgba(242,184,75,0.18);
   }
 
+  /* ==== Field builder (kolom dinamis) ==== */
+  .field-builder{ display:grid; gap:8px; margin-top:4px; }
+  .field-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap:8px;
+    align-items:center;
+  }
+  .field-row input{
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    color:var(--text);
+    background:#0C1019;
+    border:1px solid var(--hairline);
+    border-radius:6px;
+    padding:9px 10px;
+    outline:none;
+    width:100%;
+  }
+  .field-row input:focus{
+    border-color:var(--cyan);
+    box-shadow:0 0 0 3px rgba(79,227,232,0.12);
+  }
+  .field-row .col-name{ color:var(--cyan); }
+  .field-row .remove-row{
+    background:transparent;
+    border:1px solid var(--hairline);
+    color:var(--text-dim);
+    border-radius:6px;
+    padding:8px 11px;
+    font-size:14px;
+    line-height:1;
+    cursor:pointer;
+  }
+  .field-row .remove-row:hover{ border-color:var(--red); color:var(--red); }
+  .field-builder-empty{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:var(--text-faint);
+  }
+  .field-builder-empty::before{ content:"$ "; color:var(--cyan); }
+
+  .bulk-paste{ display:grid; gap:8px; }
+  .bulk-paste textarea{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    min-height:78px;
+    resize:vertical;
+  }
+
   .row-actions{
     display:flex;
     align-items:center;
@@ -238,11 +297,16 @@
     background:transparent;
     border:1px solid var(--hairline);
     color:var(--text-dim);
+    padding:10px 16px;
   }
   button.secondary:hover{
     border-color:var(--violet);
     color:var(--text);
     box-shadow:0 0 14px rgba(139,124,240,0.18);
+  }
+  button.small{
+    padding:8px 14px;
+    font-size:11px;
   }
 
   .status{
@@ -251,7 +315,7 @@
     color:var(--text-dim);
   }
   .status.ok{ color:var(--cyan); }
-  .status.err{ color:#F26D6D; }
+  .status.err{ color:var(--red); }
 
   .config-note{
     margin-top:22px;
@@ -337,7 +401,7 @@
     border-radius:10px;
     border:1px solid;
   }
-  .badge.late{ color:#F26D6D; border-color:#F26D6D; background:rgba(242,109,109,0.08); }
+  .badge.late{ color:var(--red); border-color:var(--red); background:rgba(242,109,109,0.08); }
   .badge.soon{ color:var(--amber); border-color:var(--amber); background:rgba(242,184,75,0.08); }
   .badge.ok{ color:var(--cyan); border-color:var(--cyan); background:rgba(79,227,232,0.08); }
   .badge.done{ color:var(--green); border-color:var(--green); background:rgba(110,231,168,0.08); }
@@ -355,7 +419,7 @@
     align-items:flex-end;
     flex-wrap:wrap;
   }
-  .viewer-row .field{ flex:1; min-width:180px; }
+  .viewer-row .field{ flex:1; min-width:150px; }
   .table-wrap{
     margin-top:16px;
     overflow-x:auto;
@@ -408,6 +472,7 @@
     <div class="status-pill"><span class="dot"></span>ONLINE</div>
   </div>
 
+  <!-- ================= PANEL: TAMBAH ENTRI ================= -->
   <div class="panel">
     <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
 
@@ -445,37 +510,33 @@
       </div>
       <div class="field">
         <label for="tujuanSheet">Tujuan Sheet (Tab)</label>
-        <input type="text" id="tujuanSheet" name="tujuanSheet" placeholder="mis. Log Artikel" required>
+        <input type="text" id="tujuanSheet" name="tujuanSheet" list="sheetNameList" placeholder="mis. Log Artikel" required>
       </div>
 
-      <div class="section-divider"><span>Info Tambahan · Opsional</span></div>
+      <div class="section-divider"><span>Kolom Tambahan · Fleksibel</span></div>
+      <div class="hint">Tambah sebanyak apa pun kolom dengan nama bebas — tidak harus isi satu-satu lewat input baku. Klik chip untuk isi cepat, atau tempel banyak baris sekaligus di bawah.</div>
 
-      <div class="field">
-        <label for="afiliasi">Afiliasi<span class="optional">(opsional)</span></label>
-        <input type="text" id="afiliasi" name="afiliasi" placeholder="mis. Universitas / Instansi">
+      <div class="chip-row" id="quickFieldChips">
+        <button type="button" class="chip" data-quick="Afiliasi">+ Afiliasi</button>
+        <button type="button" class="chip" data-quick="Email">+ Email</button>
+        <button type="button" class="chip" data-quick="Kontak WA">+ Kontak WA</button>
+        <button type="button" class="chip" data-quick-kv="Status:Selesai">Status: Selesai</button>
+        <button type="button" class="chip" data-quick-kv="Status:Belum">Status: Belum</button>
+        <button type="button" class="chip" data-quick="Jenis Tugas">+ Jenis Tugas</button>
       </div>
-      <div class="field">
-        <label for="email">Email<span class="optional">(opsional)</span></label>
-        <input type="email" id="email" name="email" placeholder="mis. nama@email.com">
+
+      <div class="field-builder" id="mainFieldBuilder"></div>
+      <div>
+        <button type="button" class="secondary small" id="mainAddFieldBtn">+ Tambah Kolom</button>
       </div>
-      <div class="field">
-        <label for="kontakWa">Kontak WA<span class="optional">(opsional)</span></label>
-        <input type="text" id="kontakWa" name="kontakWa" placeholder="mis. 08123456789">
-      </div>
-      <div class="field">
-        <label>Status<span class="optional">(opsional)</span></label>
-        <div class="chip-row" id="statusRow">
-          <button type="button" class="chip" data-status="Selesai">Selesai</button>
-          <button type="button" class="chip" data-status="Belum">Belum</button>
+
+      <div class="bulk-paste">
+        <div class="field">
+          <label>Tempel Banyak Kolom Sekaligus<span class="optional">(opsional)</span></label>
+          <textarea id="bulkPasteInput" placeholder="Satu baris per kolom, format &quot;Nama Kolom: Nilai&quot;, mis.&#10;Afiliasi: Universitas X&#10;Email: nama@email.com&#10;Status: Selesai"></textarea>
         </div>
-      </div>
-      <div class="field">
-        <label>Jenis Tugas<span class="optional">(opsional, bisa pilih lebih dari satu)</span></label>
-        <div class="chip-row" id="tugasRow">
-          <button type="button" class="chip" data-tugas="Copyediting">Copyediting</button>
-          <button type="button" class="chip" data-tugas="Publish">Publish</button>
-          <button type="button" class="chip" data-tugas="Pantau Sampai Publish">Pantau Sampai Publish</button>
-          <button type="button" class="chip" data-tugas="Marketing">Marketing</button>
+        <div>
+          <button type="button" class="secondary small" id="bulkApplyBtn">Terapkan ke Kolom di Atas</button>
         </div>
       </div>
     </form>
@@ -486,27 +547,72 @@
     </div>
 
     <div class="config-note">
-      Sebelum dipakai, isi <code>SCRIPT_URL</code> di kode halaman ini dengan URL Web App Google Apps Script Anda. Tanpa itu, entri hanya tersimpan sementara di log sesi di bawah, belum masuk ke Spreadsheet.<br><br>
-      Kolom <b>Tujuan Sheet</b> harus sama persis dengan nama tab di spreadsheet (case-sensitive). Kalau tab belum ada, script otomatis membuatkannya.<br><br>
+      Sebelum dipakai, isi <code>SCRIPT_URL</code> di kode halaman ini dengan URL Web App Google Apps Script Anda.<br><br>
+      Kolom <b>Tujuan Sheet</b> harus sama persis dengan nama tab di spreadsheet (case-sensitive). Kalau tab belum ada, script otomatis membuatkannya — begitu juga kolom baru yang belum ada di header, otomatis ditambahkan di ujung kanan.<br><br>
       Klik salah satu preset (1/3/7/14/30 hari) untuk mengisi <b>Deadline</b> otomatis dari hari ini, atau atur manual lewat kalender. Default terisi 7 hari.<br><br>
-      Semua kolom di bagian <b>Info Tambahan</b> bersifat opsional dan boleh dikosongkan.
+      Bagian <b>Kolom Tambahan</b> sepenuhnya bebas: nama kolom apa saja boleh, jumlahnya tidak dibatasi, dan boleh dikosongkan.
     </div>
   </div>
 
+  <!-- ================= PANEL: UPDATE STATUS ================= -->
+  <div class="panel">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    <div class="section-divider" style="margin-bottom:14px;"><span>Update Status · Job Selesai</span></div>
+    <div class="hint" style="margin-bottom:14px;">Cari baris yang sudah ada berdasarkan sebuah kolom (biasanya ID), lalu update kolom apa pun di baris itu — cocok untuk menandai job sebagai selesai tanpa membuat baris baru.</div>
+
+    <div class="viewer-row">
+      <div class="field">
+        <label for="updSheetName">Tujuan Sheet</label>
+        <input type="text" id="updSheetName" list="sheetNameList" placeholder="mis. Log Artikel">
+      </div>
+      <div class="field">
+        <label for="updMatchCol">Kolom Pencocokan</label>
+        <input type="text" id="updMatchCol" value="ID" list="updColNameList">
+      </div>
+      <div class="field">
+        <label for="updMatchVal">Nilai (mis. ID artikel)</label>
+        <input type="text" id="updMatchVal" placeholder="mis. 001">
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:14px;">
+      <label>Set Status</label>
+      <div class="chip-row" id="updStatusRow">
+        <button type="button" class="chip" data-status="Selesai">Selesai</button>
+        <button type="button" class="chip" data-status="Belum">Belum</button>
+      </div>
+    </div>
+
+    <div class="section-divider" style="margin:16px 0 -2px;"><span>Kolom Lain yang Ikut Diupdate · Opsional</span></div>
+    <div class="field-builder" id="updFieldBuilder"></div>
+    <div>
+      <button type="button" class="secondary small" id="updAddFieldBtn">+ Tambah Kolom</button>
+    </div>
+
+    <div class="row-actions">
+      <button type="button" id="updSubmitBtn">Update Baris</button>
+      <span class="status" id="updStatusMsg"></span>
+    </div>
+  </div>
+
+  <!-- ================= PANEL: LIHAT ISI SHEET ================= -->
   <div class="panel">
     <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
     <div class="section-divider" style="margin-bottom:14px;"><span>Lihat Isi Sheet</span></div>
     <div class="viewer-row">
       <div class="field">
         <label for="viewSheetName">Nama Tab</label>
-        <input type="text" id="viewSheetName" list="sheetNameList" placeholder="mis. Irul">
-        <datalist id="sheetNameList"></datalist>
+        <input type="text" id="viewSheetName" list="sheetNameList" placeholder="mis. Log Artikel">
       </div>
       <button id="viewBtn" type="button" class="secondary">Tampilkan</button>
     </div>
     <span class="status" id="viewStatusMsg"></span>
     <div id="viewResult"></div>
   </div>
+
+  <datalist id="sheetNameList"></datalist>
+  <datalist id="colNameList"></datalist>
+  <datalist id="updColNameList"></datalist>
 
   <div class="ledger">
     <h2>Log Sesi Ini</h2>
@@ -520,29 +626,141 @@
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3DYk4KAalrCZC3xcJiFBpnpzJCP5PenLcrTnIS8J3yo8B3ymLv8bYjEjhpR0RO_bZ1g/exec";
   // ===========================================================
 
-  const form = document.getElementById('logForm');
-  const submitBtn = document.getElementById('submitBtn');
-  const statusMsg = document.getElementById('statusMsg');
-  const entryList = document.getElementById('entryList');
-  const dateInput = document.getElementById('tanggal');
-  const idInput = document.getElementById('id');
-  const sheetInput = document.getElementById('tujuanSheet');
-  const deadlineInput = document.getElementById('deadline');
-  const chipRow = document.getElementById('chipRow');
-  const statusRow = document.getElementById('statusRow');
-  const tugasRow = document.getElementById('tugasRow');
-
-  let sessionEntries = [];
-  let counter = 1;
-  let lastSheetName = '';
-  let selectedStatus = '';
-  let selectedTugas = [];
-
+  function isConfigured(){ return SCRIPT_URL && SCRIPT_URL.startsWith('http'); }
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+  function todayISO(){ return new Date().toISOString().slice(0,10); }
   function isoPlusDays(days){
     const d = new Date();
     d.setDate(d.getDate() + days);
     return d.toISOString().slice(0,10);
   }
+
+  // ==== Field builder generik: dipakai di panel "Tambah Entri" & "Update Status" ====
+  function createFieldBuilder(containerEl, listId){
+    function renderEmptyHint(){
+      if(containerEl.children.length === 0){
+        const hint = document.createElement('div');
+        hint.className = 'field-builder-empty';
+        hint.textContent = 'Belum ada kolom tambahan. Klik "+ Tambah Kolom" atau salah satu chip di atas.';
+        hint.dataset.hintPlaceholder = '1';
+        containerEl.appendChild(hint);
+      }
+    }
+    function clearHint(){
+      const hint = containerEl.querySelector('[data-hint-placeholder]');
+      if(hint) hint.remove();
+    }
+    function addRow(name, value){
+      clearHint();
+      const row = document.createElement('div');
+      row.className = 'field-row';
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.className = 'col-name';
+      nameInput.placeholder = 'Nama Kolom';
+      nameInput.value = name || '';
+      if(listId) nameInput.setAttribute('list', listId);
+
+      const valueInput = document.createElement('input');
+      valueInput.type = 'text';
+      valueInput.className = 'col-value';
+      valueInput.placeholder = 'Nilai';
+      valueInput.value = value || '';
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-row';
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', function(){
+        row.remove();
+        renderEmptyHint();
+      });
+
+      row.appendChild(nameInput);
+      row.appendChild(valueInput);
+      row.appendChild(removeBtn);
+      containerEl.appendChild(row);
+      return { row, nameInput, valueInput };
+    }
+    function upsertRow(name, value, focusValue){
+      const rows = [...containerEl.querySelectorAll('.field-row')];
+      const existing = rows.find(r => r.querySelector('.col-name').value.trim().toLowerCase() === name.toLowerCase());
+      if(existing){
+        const vInput = existing.querySelector('.col-value');
+        vInput.value = value !== undefined ? value : vInput.value;
+        if(focusValue) vInput.focus();
+        return;
+      }
+      const created = addRow(name, value || '');
+      if(focusValue) created.valueInput.focus();
+    }
+    function collect(){
+      const obj = {};
+      containerEl.querySelectorAll('.field-row').forEach(row => {
+        const k = row.querySelector('.col-name').value.trim();
+        const v = row.querySelector('.col-value').value;
+        if(k) obj[k] = v;
+      });
+      return obj;
+    }
+    function clear(){
+      containerEl.innerHTML = '';
+      renderEmptyHint();
+    }
+    renderEmptyHint();
+    return { addRow, upsertRow, collect, clear };
+  }
+
+  const mainBuilder = createFieldBuilder(document.getElementById('mainFieldBuilder'), 'colNameList');
+  document.getElementById('mainAddFieldBtn').addEventListener('click', () => mainBuilder.addRow('', ''));
+
+  document.getElementById('quickFieldChips').addEventListener('click', function(evt){
+    const btn = evt.target.closest('.chip');
+    if(!btn) return;
+    if(btn.dataset.quick){
+      mainBuilder.upsertRow(btn.dataset.quick, '', true);
+    } else if(btn.dataset.quickKv){
+      const [k, v] = btn.dataset.quickKv.split(':');
+      mainBuilder.upsertRow(k, v, false);
+    }
+  });
+
+  document.getElementById('bulkApplyBtn').addEventListener('click', function(){
+    const text = document.getElementById('bulkPasteInput').value;
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    let applied = 0;
+    lines.forEach(line => {
+      const idx = line.indexOf(':');
+      if(idx === -1) return;
+      const name = line.slice(0, idx).trim();
+      const value = line.slice(idx + 1).trim();
+      if(!name) return;
+      mainBuilder.upsertRow(name, value, false);
+      applied++;
+    });
+    if(applied > 0){
+      document.getElementById('bulkPasteInput').value = '';
+      statusMsg.textContent = applied + ' kolom diterapkan dari teks tempelan.';
+      statusMsg.className = 'status ok';
+    }
+  });
+
+  const updBuilder = createFieldBuilder(document.getElementById('updFieldBuilder'), 'updColNameList');
+  document.getElementById('updAddFieldBtn').addEventListener('click', () => updBuilder.addRow('', ''));
+
+  // ==== Deadline preset chips ====
+  const dateInput = document.getElementById('tanggal');
+  const idInput = document.getElementById('id');
+  const sheetInput = document.getElementById('tujuanSheet');
+  const deadlineInput = document.getElementById('deadline');
+  const chipRow = document.getElementById('chipRow');
+  const statusMsg = document.getElementById('statusMsg');
+
   function setDeadline(days){
     deadlineInput.value = isoPlusDays(days);
     [...chipRow.querySelectorAll('.chip')].forEach(c => {
@@ -557,60 +775,20 @@
   deadlineInput.addEventListener('input', function(){
     [...chipRow.querySelectorAll('.chip')].forEach(c => c.classList.remove('active'));
   });
-  setDeadline(7); // default: 7 hari dari sekarang
+  setDeadline(7);
 
-  // Status: single-select toggle, boleh dikosongkan (klik lagi untuk batal pilih)
-  statusRow.addEventListener('click', function(evt){
-    const btn = evt.target.closest('.chip');
-    if(!btn) return;
-    const val = btn.dataset.status;
-    if(selectedStatus === val){
-      selectedStatus = '';
-    } else {
-      selectedStatus = val;
-    }
-    [...statusRow.querySelectorAll('.chip')].forEach(c => {
-      const active = c.dataset.status === selectedStatus;
-      c.classList.toggle('status-active', active);
-      c.classList.toggle('active', active);
-    });
-  });
-
-  // Jenis Tugas: multi-select toggle
-  tugasRow.addEventListener('click', function(evt){
-    const btn = evt.target.closest('.chip');
-    if(!btn) return;
-    const val = btn.dataset.tugas;
-    if(selectedTugas.includes(val)){
-      selectedTugas = selectedTugas.filter(t => t !== val);
-      btn.classList.remove('active');
-    } else {
-      selectedTugas.push(val);
-      btn.classList.add('active');
-    }
-  });
-
-  function resetOptionalChips(){
-    selectedStatus = '';
-    selectedTugas = [];
-    [...statusRow.querySelectorAll('.chip')].forEach(c => {
-      c.classList.remove('active');
-      c.classList.remove('status-active');
-    });
-    [...tugasRow.querySelectorAll('.chip')].forEach(c => c.classList.remove('active'));
-  }
-
-  function todayISO(){
-    const d = new Date();
-    return d.toISOString().slice(0,10);
-  }
-  function suggestId(){
-    return String(counter).padStart(3,'0');
-  }
+  let counter = 1;
+  function suggestId(){ return String(counter).padStart(3,'0'); }
   dateInput.value = todayISO();
   idInput.value = suggestId();
 
+  // ==== Session log ====
+  let sessionEntries = [];
+  const entryList = document.getElementById('entryList');
+  const CORE_KEYS = ['ID','Penulis Pertama','Judul Artikel','Tanggal Input','Jurnal','Deadline'];
+
   function deadlineBadge(deadlineStr){
+    if(!deadlineStr) return { cls:'ok', label:'-' };
     const today = new Date(todayISO() + 'T00:00:00');
     const dl = new Date(deadlineStr + 'T00:00:00');
     const diffDays = Math.round((dl - today) / 86400000);
@@ -626,91 +804,86 @@
       return;
     }
     entryList.innerHTML = sessionEntries.slice().reverse().map(e => {
-      const b = e.status === 'Selesai'
+      const f = e.fields;
+      const b = f.Status === 'Selesai'
         ? { cls:'done', label:'Selesai' }
-        : deadlineBadge(e.deadline);
-      const extras = [];
-      if(e.afiliasi) extras.push(e.afiliasi);
-      if(e.email) extras.push(e.email);
-      if(e.kontakWa) extras.push('WA: ' + e.kontakWa);
-      if(e.jenisTugas) extras.push(e.jenisTugas);
+        : deadlineBadge(f.Deadline);
+      const extras = Object.keys(f)
+        .filter(k => CORE_KEYS.indexOf(k) === -1 && f[k])
+        .map(k => `${k}: ${f[k]}`);
       const extraLine = extras.length ? `<div class="meta-extra">${escapeHtml(extras.join(' · '))}</div>` : '';
       return `
       <div class="entry">
-        <div class="idx">${e.id}</div>
+        <div class="idx">${escapeHtml(f.ID)}</div>
         <div class="main">
-          <div class="title">${escapeHtml(e.judul)}</div>
-          <div class="meta">${escapeHtml(e.penulis)} · ${escapeHtml(e.jurnal)} · tab: ${escapeHtml(e.sheetName)}</div>
+          <div class="title">${escapeHtml(f['Judul Artikel'])}</div>
+          <div class="meta">${escapeHtml(f['Penulis Pertama'])} · ${escapeHtml(f.Jurnal)} · tab: ${escapeHtml(e.sheetName)}</div>
           ${extraLine}
         </div>
         <div class="date">
-          ${e.tanggal}
+          ${escapeHtml(f['Tanggal Input'])}
           <div class="badge ${b.cls}">${b.label}</div>
         </div>
       </div>
     `;
     }).join('');
   }
-  function escapeHtml(s){
-    const d = document.createElement('div');
-    d.textContent = s == null ? '' : String(s);
-    return d.innerHTML;
-  }
+
+  // ==== Submit: Tambah Entri ====
+  const form = document.getElementById('logForm');
+  const submitBtn = document.getElementById('submitBtn');
 
   form.addEventListener('submit', async function(evt){
     evt.preventDefault();
-    const data = {
-      id: idInput.value.trim(),
-      penulis: document.getElementById('penulis').value.trim(),
-      judul: document.getElementById('judul').value.trim(),
-      tanggal: dateInput.value,
-      jurnal: document.getElementById('jurnal').value.trim(),
-      deadline: deadlineInput.value,
-      sheetName: sheetInput.value.trim(),
-      afiliasi: document.getElementById('afiliasi').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      kontakWa: document.getElementById('kontakWa').value.trim(),
-      status: selectedStatus,
-      jenisTugas: selectedTugas.join(', '),
+
+    const core = {
+      'ID': idInput.value.trim(),
+      'Penulis Pertama': document.getElementById('penulis').value.trim(),
+      'Judul Artikel': document.getElementById('judul').value.trim(),
+      'Tanggal Input': dateInput.value,
+      'Jurnal': document.getElementById('jurnal').value.trim(),
+      'Deadline': deadlineInput.value,
     };
-    if(!data.id || !data.penulis || !data.judul || !data.tanggal || !data.jurnal || !data.deadline || !data.sheetName){
+    const sheetName = sheetInput.value.trim();
+
+    if(!core.ID || !core['Penulis Pertama'] || !core['Judul Artikel'] || !core['Tanggal Input'] || !core.Jurnal || !core.Deadline || !sheetName){
       statusMsg.textContent = 'Kolom wajib (ID, Penulis, Judul, Tanggal, Jurnal, Deadline, Tujuan Sheet) harus diisi.';
       statusMsg.className = 'status err';
       return;
     }
 
+    const extra = mainBuilder.collect();
+    const fields = Object.assign({}, core, extra);
+
     submitBtn.disabled = true;
     statusMsg.textContent = 'Mengirim…';
     statusMsg.className = 'status';
 
-    const isConfigured = SCRIPT_URL && SCRIPT_URL.startsWith('http');
-
     try{
-      if(isConfigured){
+      if(isConfigured()){
         const res = await fetch(SCRIPT_URL, {
           method: 'POST',
           headers: {'Content-Type':'text/plain;charset=utf-8'},
-          body: JSON.stringify(data)
+          body: JSON.stringify({ action: 'add', sheetName, fields })
         });
-        let ok = res.ok;
-        if(!ok){
-          throw new Error('Respon server: ' + res.status);
-        }
+        const json = await res.json();
+        if(json.status !== 'ok') throw new Error(json.message || ('Respon server: ' + res.status));
       }
 
-      sessionEntries.push(data);
+      sessionEntries.push({ sheetName, fields });
       counter++;
-      lastSheetName = data.sheetName;
       renderEntries();
+
+      const keepSheet = sheetName;
       form.reset();
       dateInput.value = todayISO();
       idInput.value = suggestId();
-      sheetInput.value = lastSheetName;
+      sheetInput.value = keepSheet;
       setDeadline(7);
-      resetOptionalChips();
+      mainBuilder.clear();
 
-      statusMsg.textContent = isConfigured
-        ? `Tersimpan ke tab "${data.sheetName}".`
+      statusMsg.textContent = isConfigured()
+        ? `Tersimpan ke tab "${sheetName}".`
         : 'Tersimpan di sesi ini (SCRIPT_URL belum diisi, belum masuk Spreadsheet).';
       statusMsg.className = 'status ok';
 
@@ -722,26 +895,120 @@
     }
   });
 
-  // ==== Fitur: Lihat Isi Sheet Tertentu ====
-  const viewBtn = document.getElementById('viewBtn');
-  const viewSheetName = document.getElementById('viewSheetName');
-  const viewStatusMsg = document.getElementById('viewStatusMsg');
-  const viewResult = document.getElementById('viewResult');
+  // ==== Update Status ====
+  const updSheetName = document.getElementById('updSheetName');
+  const updMatchCol = document.getElementById('updMatchCol');
+  const updMatchVal = document.getElementById('updMatchVal');
+  const updStatusRow = document.getElementById('updStatusRow');
+  const updSubmitBtn = document.getElementById('updSubmitBtn');
+  const updStatusMsg = document.getElementById('updStatusMsg');
+  let selectedUpdStatus = '';
+
+  updStatusRow.addEventListener('click', function(evt){
+    const btn = evt.target.closest('.chip');
+    if(!btn) return;
+    const val = btn.dataset.status;
+    selectedUpdStatus = (selectedUpdStatus === val) ? '' : val;
+    [...updStatusRow.querySelectorAll('.chip')].forEach(c => {
+      const active = c.dataset.status === selectedUpdStatus;
+      c.classList.toggle('status-active', active);
+      c.classList.toggle('active', active);
+    });
+  });
+
+  updSubmitBtn.addEventListener('click', async function(){
+    const sheetName = updSheetName.value.trim();
+    const matchColumn = updMatchCol.value.trim() || 'ID';
+    const matchValue = updMatchVal.value.trim();
+
+    if(!sheetName || !matchValue){
+      updStatusMsg.textContent = 'Isi dulu Tujuan Sheet dan Nilai pencocokan (mis. ID artikel).';
+      updStatusMsg.className = 'status err';
+      return;
+    }
+
+    const fields = updBuilder.collect();
+    if(selectedUpdStatus) fields['Status'] = selectedUpdStatus;
+
+    if(Object.keys(fields).length === 0){
+      updStatusMsg.textContent = 'Pilih Status baru atau tambah minimal satu kolom untuk diupdate.';
+      updStatusMsg.className = 'status err';
+      return;
+    }
+
+    if(!isConfigured()){
+      updStatusMsg.textContent = 'SCRIPT_URL belum diisi, tidak bisa update ke Spreadsheet.';
+      updStatusMsg.className = 'status err';
+      return;
+    }
+
+    updSubmitBtn.disabled = true;
+    updStatusMsg.textContent = 'Mengupdate…';
+    updStatusMsg.className = 'status';
+
+    try{
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: {'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action: 'update', sheetName, matchColumn, matchValue, fields })
+      });
+      const json = await res.json();
+      if(json.status !== 'ok') throw new Error(json.message || ('Respon server: ' + res.status));
+
+      updStatusMsg.textContent = `Baris dengan ${matchColumn} = "${matchValue}" berhasil diupdate.`;
+      updStatusMsg.className = 'status ok';
+      updMatchVal.value = '';
+      selectedUpdStatus = '';
+      [...updStatusRow.querySelectorAll('.chip')].forEach(c => { c.classList.remove('active'); c.classList.remove('status-active'); });
+      updBuilder.clear();
+
+      // Segarkan tabel viewer kalau sedang menampilkan tab yang sama
+      if(viewSheetName.value.trim() === sheetName){
+        viewSheet();
+      }
+    }catch(err){
+      updStatusMsg.textContent = 'Gagal update: ' + err.message;
+      updStatusMsg.className = 'status err';
+    }finally{
+      updSubmitBtn.disabled = false;
+    }
+  });
+
+  // ==== Autocomplete: daftar nama tab & daftar header per tab ====
   const sheetNameList = document.getElementById('sheetNameList');
+  const colNameList = document.getElementById('colNameList');
+  const updColNameList = document.getElementById('updColNameList');
 
   async function loadSheetNameList(){
-    if(!(SCRIPT_URL && SCRIPT_URL.startsWith('http'))) return;
+    if(!isConfigured()) return;
     try{
       const res = await fetch(SCRIPT_URL + '?action=listSheets');
       const json = await res.json();
       if(json.status === 'ok' && Array.isArray(json.sheets)){
         sheetNameList.innerHTML = json.sheets.map(s => `<option value="${escapeHtml(s)}"></option>`).join('');
       }
-    }catch(err){
-      // Diam-diam gagal; datalist opsional saja, tidak menghentikan pengguna.
-    }
+    }catch(err){ /* datalist opsional, gagal diam-diam */ }
   }
   loadSheetNameList();
+
+  async function loadHeaderList(sheetName, datalistEl){
+    if(!isConfigured() || !sheetName) return;
+    try{
+      const res = await fetch(SCRIPT_URL + '?action=listHeaders&sheet=' + encodeURIComponent(sheetName));
+      const json = await res.json();
+      if(json.status === 'ok' && Array.isArray(json.headers)){
+        datalistEl.innerHTML = json.headers.map(h => `<option value="${escapeHtml(h)}"></option>`).join('');
+      }
+    }catch(err){ /* opsional */ }
+  }
+  sheetInput.addEventListener('change', () => loadHeaderList(sheetInput.value.trim(), colNameList));
+  updSheetName.addEventListener('change', () => loadHeaderList(updSheetName.value.trim(), updColNameList));
+
+  // ==== Fitur: Lihat Isi Sheet Tertentu ====
+  const viewBtn = document.getElementById('viewBtn');
+  const viewSheetName = document.getElementById('viewSheetName');
+  const viewStatusMsg = document.getElementById('viewStatusMsg');
+  const viewResult = document.getElementById('viewResult');
 
   async function viewSheet(){
     const name = viewSheetName.value.trim();
@@ -750,7 +1017,7 @@
       viewStatusMsg.className = 'status err';
       return;
     }
-    if(!(SCRIPT_URL && SCRIPT_URL.startsWith('http'))){
+    if(!isConfigured()){
       viewStatusMsg.textContent = 'SCRIPT_URL belum diisi, tidak bisa mengambil data dari Spreadsheet.';
       viewStatusMsg.className = 'status err';
       return;
